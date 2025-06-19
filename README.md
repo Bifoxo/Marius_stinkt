@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>CSGO2 Case Opening</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 50px;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    .case-container {
+      position: relative;
+      width: 650px;
+      height: 130px;
+      margin: 0 auto;
+      overflow: hidden;
+      border: 4px solid gold;
+      background: #222;
+    }
+
+    .slot-strip {
+      display: flex;
+      transition: transform 4s ease-out;
+      position: absolute;
+      top: 5px;
+      left: 0;
+    }
+
+    .slot {
+      flex: 0 0 130px;
+      height: 120px;
+      line-height: 120px;
+      font-size: 20px;
+      margin: 0;
+      background: #333;
+      border-radius: 10px;
+      border: 2px solid #555;
+      text-align: center;
+    }
+
+    .knife {
+      background: linear-gradient(45deg, gold, yellow);
+      font-weight: bold;
+      color: black;
+    }
+
+    .spin-btn, .reset-btn {
+      margin-top: 20px;
+      padding: 15px 30px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      background: gold;
+      color: black;
+      border-radius: 10px;
+      transition: background 0.3s;
+    }
+
+    .spin-btn:hover, .reset-btn:hover {
+      background: #ffd700;
+    }
+
+    .pointer-line {
+      position: relative;
+      height: 0;
+    }
+
+    .pointer-line::after {
+      content: "";
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 160px;
+      background: red;
+      z-index: 10;
+    }
+
+    #winner-screen {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.9);
+      color: white;
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    .winner-title {
+      font-size: 60px;
+      color: gold;
+      margin-bottom: 30px;
+    }
+
+    .birthday-text {
+      font-size: 32px;
+      font-weight: bold;
+      background: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-top: 50px;
+    }
+
+    .subtext {
+      font-size: 24px;
+      color: #ccc;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>CS:GO2 Case öffnen!</h1>
+
+  <div class="pointer-line"></div>
+  <div class="case-container">
+    <div class="slot-strip" id="strip">
+      <!-- Dynamisch gefüllt -->
+    </div>
+  </div>
+  <button class="spin-btn" onclick="spin()">Case öffnen 🎁</button>
+  <br>
+  <button class="reset-btn" onclick="resetCase()">Nochmal öffnen 🔁</button>
+
+  <div id="winner-screen">
+    <div class="winner-title">★ BUTTERFLY-MESSER ★</div>
+    <canvas id="confetti-canvas"></canvas>
+    <div class="birthday-text">ALLES GUTE ZUM GEBURTSTAG</div>
+    <div class="subtext">MARIUS POPARIUS MEXADIUS</div>
+  </div>
+
+  <script>
+    const weapons = [
+      "USP-S | Cortex",
+      "AK-47 | Redline",
+      "M4A1-S | Decimator",
+      "AWP | Phobos",
+      "Desert Eagle | Blaze",
+      "MP9 | Food Chain",
+      "FAMAS | Mecha Industries",
+      "P90 | Grim",
+      "SG 553 | Pulse"
+    ];
+
+    const strip = document.getElementById("strip");
+    const winnerScreen = document.getElementById("winner-screen");
+
+    function createSlots() {
+      strip.innerHTML = "";
+
+      const slots = [];
+
+      for (let i = 0; i < 10; i++) {
+        const random = weapons[Math.floor(Math.random() * weapons.length)];
+        slots.push(`<div class="slot">${random}</div>`);
+      }
+
+      slots.push(`<div class="slot knife">★ GOLDSMESSER ★</div>`);
+
+      for (let i = 0; i < 10; i++) {
+        const random = weapons[Math.floor(Math.random() * weapons.length)];
+        slots.push(`<div class="slot">${random}</div>`);
+      }
+
+      strip.innerHTML = slots.join("");
+    }
+
+    function spin() {
+      createSlots();
+
+      const slotWidth = 130;
+      const targetIndex = 10;
+      const containerWidth = 650;
+      const centerOffset = (containerWidth / 2) - (slotWidth / 2);
+      const shift = (targetIndex * slotWidth) - centerOffset;
+
+      strip.style.transition = "transform 4s ease-out";
+      strip.style.transform = `translateX(-${shift}px)`;
+
+      setTimeout(() => {
+        winnerScreen.style.display = "flex";
+        startConfetti();
+      }, 4200);
+    }
+
+    function resetCase() {
+      strip.style.transition = "none";
+      strip.style.transform = "translateX(0)";
+      strip.innerHTML = "";
+      winnerScreen.style.display = "none";
+    }
+
+    // Mini-Konfetti
+    function startConfetti() {
+      const canvas = document.getElementById("confetti-canvas");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const ctx = canvas.getContext("2d");
+      const confetti = Array.from({length: 150}, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height,
+        r: Math.random() * 6 + 4,
+        d: Math.random() * 10 + 5,
+        color: `hsl(${Math.random() * 360}, 100%, 50%)`
+      }));
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confetti.forEach(c => {
+          ctx.beginPath();
+          ctx.arc(c.x, c.y, c.r, 0, 2 * Math.PI);
+          ctx.fillStyle = c.color;
+          ctx.fill();
+        });
+        update();
+        requestAnimationFrame(draw);
+      }
+
+      function update() {
+        confetti.forEach(c => {
+          c.y += c.d * 0.5;
+          if (c.y > canvas.height) {
+            c.y = -10;
+            c.x = Math.random() * canvas.width;
+          }
+        });
+      }
+
+      draw();
+    }
+  </script>
+</body>
+</html>
